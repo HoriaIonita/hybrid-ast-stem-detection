@@ -8,7 +8,7 @@ It provides the complete pipeline for dataset preprocessing, model training (Pro
 
 1. **Clone the repository:**
 ```bash
-git clone [https://github.com/HoriaIonita/hybrid-ast-stem-detection.git](https://github.com/YOUR-USERNAME/hybrid-ast-stem-detection.git)
+git clone [https://github.com/HoriaIonita/hybrid-ast-stem-detection.git](https://github.com/HoriaIonita//hybrid-ast-stem-detection.git)
 cd hybrid-ast-stem-detection
 ```
 
