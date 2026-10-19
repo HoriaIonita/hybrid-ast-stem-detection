@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-MDPI - FLOPs Profiler & Threshold Sensitivity Sweep
+Title: MDPI Rebuttal - FLOPs Profiler & Threshold Sensitivity Sweep
+Description: 
 Calculates computational overhead for AST vs PANNs CNN14.
-Generates an F1 sensitivity curve across different ground-truth energy thresholds.
+Generates an F1 sensitivity curve across different ground-truth power thresholds.
 """
 
 import os
@@ -33,7 +34,7 @@ def profile_model(model, name, input_shape):
     return params_m, flops_g
 
 def run_threshold_sweep():
-    print(f"\n--- Running Ground-Truth Energy Threshold Sweep (0.01 to 0.06) ---")
+    print(f"\n--- Running Ground-Truth Power Threshold Sweep (0.01 to 0.06) ---")
     transform = LogMelSpectrogramTransform()
     test_dataset = MUSDB18Dataset("musdb18_npy", split='test', transform=None, augment_flag=False)
     test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False)
@@ -72,17 +73,18 @@ def run_threshold_sweep():
     raw_probs = np.vstack(raw_probs)
     
     # Standard decision threshold for evaluation 
+    # (Since we are testing ground-truth sensitivity, we freeze the PR-curve threshold logic to a baseline)
     eval_preds = (raw_probs > 0.15).astype(float) 
     
     # 2. Sweep the dataset generation logic
     f1_results = {inst: [] for inst in all_instruments}
     
     for thresh in sweep_values:
-        print(f"Generating labels and evaluating F1 for Energy Threshold: {thresh}...")
+        print(f"Generating labels and evaluating F1 for Power Threshold: {thresh}...")
         y_true_sweep = []
         for stem_seg in all_stems:
-            mixture_energy = np.mean(stem_seg[0] ** 2)
-            dynamic_thresh = mixture_energy * thresh + 1e-9
+            mixture_power = np.mean(stem_seg[0] ** 2)
+            dynamic_thresh = mixture_power * thresh + 1e-9
             presence_flags = [1.0 if np.mean(stem_seg[idx] ** 2) > dynamic_thresh else 0.0 for idx in range(1, 5)]
             y_true_sweep.append(presence_flags)
             
@@ -98,13 +100,13 @@ def run_threshold_sweep():
         plt.plot(sweep_values, f1_results[inst], marker='o', label=inst.capitalize())
         
     plt.axvline(x=0.03, color='r', linestyle='--', label='Chosen Baseline (0.03)')
-    plt.title("AST Performance vs Ground-Truth Energy Threshold")
-    plt.xlabel("Energy Threshold Ratio")
+    plt.title("AST Performance vs Ground-Truth Power Threshold")
+    plt.xlabel("Power Threshold Ratio")
     plt.ylabel("F1 Score")
     plt.legend()
     plt.grid(True, linestyle=':', alpha=0.6)
     plt.tight_layout()
-    plt.savefig(os.path.join(results_dir, "Fig_Threshold_Sensitivity_Sweep.png"), dpi=300)
+    plt.savefig(os.path.join(results_dir, "Fig_Threshold_Sensitivity_Sweep_Power.png"), dpi=300)
     plt.close()
     print(f"\n[SUCCESS] Sensitivity Sweep Plot saved to {results_dir}/Fig_Threshold_Sensitivity_Sweep.png")
 
